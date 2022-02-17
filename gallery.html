@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .error {
+            color: red;
+        }
+
+        .gallery__image {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>AJAX</h1>
+    <div class="gallery">
+
+    </div>
+    <button class="next-button">>></button>
+    <script>
+        function httpRequest({ url, method = 'GET', responseType = 'json', onSuccess, onFail }) {
+            const request = new XMLHttpRequest();
+
+            request.open(method, url);
+            request.send();
+            request.responseType = 'json';
+
+            request.onload = function() {
+                if (request.status === 200) {
+                    onSuccess(request.response);
+                } else {
+                    onFail(request.response);
+                }
+            };
+
+            request.onerror = function(e) {
+                console.log(e);
+                onFail(e.message);
+            }
+        }
+
+        const gallery = document.querySelector('.gallery');
+        const nextButton = document.querySelector('.next-button');
+        let galleryImage = 1;
+
+        showImage();
+
+        nextButton.addEventListener('click', () => {
+            galleryImage += 1;
+
+            showImage();
+        });
+
+        function showImage() {
+            gallery.innerHTML = '';
+            nextButton.disabled = true;
+            httpRequest({
+                url: `gallery/image${galleryImage}.json`,
+                onSuccess: (response) => {
+                    const { title, image } = response;
+
+                    checkNextImageExists();
+
+                    const picture = document.createElement('img');
+                    picture.classList.add('gallery__image');
+                    picture.src = image;
+
+                    gallery.appendChild(picture);
+
+                    const caption = document.createElement('h4');
+                    caption.classList.add('gallery__title');
+                    caption.textContent = title;
+
+                    gallery.appendChild(caption);
+                },
+                onFail: () => {
+                    console.error('!!!');
+                }
+            });
+        }
+
+        function checkNextImageExists() {
+            httpRequest({
+                url: `gallery/image${galleryImage + 1}.json`,
+                onSuccess: (response) => {
+                    nextButton.disabled = false;
+                },
+                onFail: () => {
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>

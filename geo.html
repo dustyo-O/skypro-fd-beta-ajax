@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>AJAX</h1>
+    <button>Тест</button>
+    <script>
+        function distance(x1, y1, x2, y2) {
+            return ((x2 - x1) ** 2) + ((y2 - y1) ** 2);
+        }
+        function detectGeoLocation(cities) {
+            console.log(cities);
+
+            navigator.geolocation.getCurrentPosition(function(data) {
+                const { latitude, longitude } = data.coords;
+
+                console.log(latitude, longitude);
+
+                let minimumDistance = Infinity;
+
+                let minIndex = undefined;
+
+                for(let i = 0; i < cities.length; i++) {
+                    const city = cities[i];
+
+                    const { lat, lng } = city;
+                    const dist = distance(latitude, longitude, lat, lng);
+                    if (dist < minimumDistance) {
+                        minIndex = i;
+
+                        minimumDistance = dist;
+                    }
+                }
+
+                console.log(cities[minIndex].name);
+            });
+        }
+
+        const request = new XMLHttpRequest();
+
+        request.open('GET', 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json');
+
+        request.send();
+
+        request.onload = function () {
+            console.log(request.response);
+            detectGeoLocation(JSON.parse(request.response));
+        };
+
+    </script>
+</body>
+</html>

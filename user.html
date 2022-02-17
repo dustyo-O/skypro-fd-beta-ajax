@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>AJAX</h1>
+    <div class="user"></div>
+    <button class="enter-button">Войти</button>
+    <script>
+        function httpRequest({ url, method = 'GET', responseType = 'json', onSuccess, onFail }) {
+            const request = new XMLHttpRequest();
+
+            request.open(method, url);
+            request.send();
+            request.responseType = 'json';
+
+            request.onload = function() {
+                if (request.status === 200) {
+                    onSuccess(request.response);
+                } else {
+                    onFail(request.response);
+                }
+            };
+
+            request.onerror = function(e) {
+                console.log(e);
+                onFail(e.message);
+            }
+        }
+
+        const user = document.querySelector('.user');
+        const enterButton = document.querySelector('.enter-button');
+
+        function showUser(userData) {
+            console.log(userData);
+
+            user.textContent = userData.username + ' ' + userData.rating;
+        }
+
+        function showError(response) {
+            const error = document.createElement('span');
+            error.classList.add('error');
+
+            error.textContent = response || 'Ошибка при запросе, попробуйте еще раз';
+
+            user.parentElement.insertBefore(error, user.nextElementSibling);
+
+            setTimeout(() => {
+                error.remove();
+            }, 5000);
+        }
+
+        enterButton.addEventListener('click', () => {
+            enterButton.disabled = true;
+            httpRequest({
+                url: 'user.json',
+                onSuccess: (response) => {
+                    showUser(response);
+
+                    enterButton.remove();
+                },
+                onFail: (message) => {
+                    enterButton.disabled = false;
+                    showError(message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

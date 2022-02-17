@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>AJAX</h1>
+    <button class="like-button">💔</button>
+    <script>
+        let isLiked = false;
+
+        function httpRequest({ url, method = 'GET', responseType = 'json', onSuccess, onFail }) {
+            const request = new XMLHttpRequest();
+
+            request.open(method, url);
+            request.send();
+            request.responseType = 'json';
+
+            request.onload = function() {
+                if (request.status === 200) {
+                    onSuccess(request.response);
+                } else {
+                    onFail(request.response);
+                }
+            };
+
+            request.onerror = function(e) {
+                console.log(e);
+                onFail(e.message);
+            }
+        }
+
+        const likeButton = document.querySelector('.like-button');
+
+        updateLike();
+
+        likeButton.addEventListener('click', () => {
+            likeButton.disabled = true;
+            likeButton.textContent = '🔄';
+            httpRequest({
+                url: 'like.json',
+                onSuccess: (response) => {
+                    if (response.status === 'ok') {
+                        isLiked = !isLiked;
+                        updateLike();
+                    }
+                    likeButton.disabled = false;
+                },
+                onFail: (message) => {
+                    likeButton.disabled = false;
+                    showError(likeButton, message);
+                }
+            });
+        });
+
+        function updateLike() {
+            likeButton.textContent = isLiked ? '❤️' : '💔';
+        }
+
+        function showError(where, message) {
+            const error = document.createElement('span');
+            error.classList.add('error');
+
+            error.textContent = message || 'Ошибка при запросе, попробуйте еще раз';
+
+            where.parentElement.insertBefore(error, where.nextElementSibling);
+
+            setTimeout(() => {
+                error.remove();
+            }, 5000);
+        }
+
+    </script>
+</body>
+</html>
